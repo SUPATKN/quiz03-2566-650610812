@@ -4,15 +4,29 @@ import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
 
 export const GET = async (request) => {
+  const roomID = request.nextUrl.searchParams.get("roomId");
   readDB();
 
-  // return NextResponse.json(
-  //   {
-  //     ok: false,
-  //     message: `Room is not found`,
-  //   },
-  //   { status: 404 }
-  // );
+  const findRoomId = DB.rooms.find((x) => x.roomId === roomID);
+  if (!findRoomId)
+    return NextResponse.json(
+      {
+        ok: false,
+        message: `Room is not found`,
+      },
+      { status: 404 }
+    );
+
+  const allMessages = [];
+  for (const mess of DB.messages) {
+    if (mess.roomId === roomID) {
+      allMessages.push(mess);
+    }
+  }
+  return NextResponse.json({
+    ok: true,
+    message: allMessages,
+  });
 };
 
 export const POST = async (request) => {
