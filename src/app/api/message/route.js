@@ -60,7 +60,7 @@ export const DELETE = async (request) => {
   const body = await request.json();
   const payload = checkToken();
   const { messageId } = body;
-  const role = payload.role;
+
   if (payload === null) {
     return NextResponse.json(
       {
@@ -70,7 +70,7 @@ export const DELETE = async (request) => {
       { status: 401 }
     );
   }
-
+  const role = payload.role;
   readDB();
   const findIndexMess = DB.messages.findIndex((x) => x.messageId === messageId);
   if (findIndexMess === -1)
@@ -81,7 +81,15 @@ export const DELETE = async (request) => {
       },
       { status: 404 }
     );
-
+  if (role === "ADMIN") {
+    return NextResponse.json(
+      {
+        ok: false,
+        message: "Invalid token",
+      },
+      { status: 401 }
+    );
+  }
   DB.messages.splice(findIndexMess, 1);
   writeDB();
 
