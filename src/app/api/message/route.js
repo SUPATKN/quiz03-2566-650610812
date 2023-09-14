@@ -30,48 +30,59 @@ export const GET = async (request) => {
 };
 
 export const POST = async (request) => {
+  const body = await request.json();
+  const { roomId, messageText } = body;
   readDB();
 
-  // return NextResponse.json(
-  //   {
-  //     ok: false,
-  //     message: `Room is not found`,
-  //   },
-  //   { status: 404 }
-  // );
+  const findRoomId = DB.rooms.find((x) => x.roomId === body.roomId);
+  if (!findRoomId)
+    return NextResponse.json(
+      {
+        ok: false,
+        message: `Room is not found`,
+      },
+      { status: 404 }
+    );
 
   const messageId = nanoid();
 
+  DB.messages.push({ roomId, messageId, messageText });
   writeDB();
 
   return NextResponse.json({
     ok: true,
-    // messageId,
+    messageId,
     message: "Message has been sent",
   });
 };
 
 export const DELETE = async (request) => {
+  const body = await request.json();
   const payload = checkToken();
-
-  // return NextResponse.json(
-  //   {
-  //     ok: false,
-  //     message: "Invalid token",
-  //   },
-  //   { status: 401 }
-  // );
+  const { messageId } = body;
+  const role = payload.role;
+  if (payload === null) {
+    return NextResponse.json(
+      {
+        ok: false,
+        message: "Invalid token",
+      },
+      { status: 401 }
+    );
+  }
 
   readDB();
+  const findIndexMess = DB.messages.findIndex((x) => x.messageId === messageId);
+  if (findIndexMess === -1)
+    return NextResponse.json(
+      {
+        ok: false,
+        message: "Message is not found",
+      },
+      { status: 404 }
+    );
 
-  // return NextResponse.json(
-  //   {
-  //     ok: false,
-  //     message: "Message is not found",
-  //   },
-  //   { status: 404 }
-  // );
-
+  DB.messages.splice(findIndexMess, 1);
   writeDB();
 
   return NextResponse.json({
