@@ -71,6 +71,15 @@ export const DELETE = async (request) => {
     );
   }
   const role = payload.role;
+  if (role === "ADMIN") {
+    return NextResponse.json(
+      {
+        ok: false,
+        message: "Invalid token",
+      },
+      { status: 401 }
+    );
+  }
   readDB();
   const findIndexMess = DB.messages.findIndex((x) => x.messageId === messageId);
   if (findIndexMess === -1)
@@ -81,15 +90,6 @@ export const DELETE = async (request) => {
       },
       { status: 404 }
     );
-  if (role === "ADMIN") {
-    return NextResponse.json(
-      {
-        ok: false,
-        message: "Invalid token",
-      },
-      { status: 401 }
-    );
-  }
   DB.messages.splice(findIndexMess, 1);
   writeDB();
 
